@@ -834,6 +834,19 @@ func (t *transferActiveTaskExecutor) processStartChildExecution(
 	}
 
 	attributes := initiatedEvent.StartChildWorkflowExecutionInitiatedEventAttributes
+	if attributes == nil {
+		err := errors.New("unexpected nil attributes for StartChildWorkflowExecutionInitiatedEventAttributes")
+		info := mutableState.GetExecutionInfo()
+		t.logger.Error("unexpected nil attributes",
+			tag.Error(err),
+			tag.WorkflowDomainID(info.DomainID),
+			tag.WorkflowID(info.WorkflowID),
+			tag.WorkflowRunID(info.RunID),
+			tag.WorkflowEventID(initiatedEventID),
+		)
+		return err
+	}
+
 	childRunID, err := startWorkflowWithRetry(
 		ctx,
 		t.historyClient,
@@ -1656,6 +1669,10 @@ func startWorkflowWithRetry(
 	requestID string,
 	attributes *types.StartChildWorkflowExecutionInitiatedEventAttributes,
 ) (string, error) {
+
+	if attributes == nil {
+		return "", errors.New("unexpected nil attributes within startWorkflowWithRetry")
+	}
 
 	// Get parent domain name
 	domainName, err := domainCache.GetDomainName(task.DomainID)
