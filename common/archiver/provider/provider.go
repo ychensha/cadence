@@ -18,16 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+// Package provider TODO
 package provider
 
 import (
 	"errors"
 	"sync"
 
-	"github.com/uber/cadence/common/archiver/gcloud"
-
 	"github.com/uber/cadence/common/archiver"
+	"github.com/uber/cadence/common/archiver/cosstore"
 	"github.com/uber/cadence/common/archiver/filestore"
+	"github.com/uber/cadence/common/archiver/gcloud"
 	"github.com/uber/cadence/common/archiver/s3store"
 	"github.com/uber/cadence/common/config"
 )
@@ -118,7 +119,9 @@ func (p *archiverProvider) RegisterBootstrapContainer(
 	return nil
 }
 
-func (p *archiverProvider) GetHistoryArchiver(scheme, serviceName string) (historyArchiver archiver.HistoryArchiver, err error) {
+// GetHistoryArchiver TODO
+func (p *archiverProvider) GetHistoryArchiver(scheme, serviceName string) (historyArchiver archiver.HistoryArchiver,
+	err error) {
 	archiverKey := p.getArchiverKey(scheme, serviceName)
 	p.RLock()
 	if historyArchiver, ok := p.historyArchivers[archiverKey]; ok {
@@ -151,6 +154,11 @@ func (p *archiverProvider) GetHistoryArchiver(scheme, serviceName string) (histo
 			return nil, ErrArchiverConfigNotFound
 		}
 		historyArchiver, err = s3store.NewHistoryArchiver(container, p.historyArchiverConfigs.S3store)
+	case cosstore.URIScheme:
+		if p.historyArchiverConfigs.COSstore == nil {
+			return nil, ErrArchiverConfigNotFound
+		}
+		historyArchiver, err = cosstore.NewHistoryArchiver(container, p.historyArchiverConfigs.COSstore)
 	default:
 		return nil, ErrUnknownScheme
 	}
@@ -168,6 +176,7 @@ func (p *archiverProvider) GetHistoryArchiver(scheme, serviceName string) (histo
 	return historyArchiver, nil
 }
 
+// GetVisibilityArchiver TODO
 func (p *archiverProvider) GetVisibilityArchiver(scheme, serviceName string) (archiver.VisibilityArchiver, error) {
 	archiverKey := p.getArchiverKey(scheme, serviceName)
 	p.RLock()

@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+// Package config TODO
 package config
 
 import (
@@ -28,7 +29,6 @@ import (
 
 	"github.com/uber-go/tally/m3"
 	"github.com/uber-go/tally/prometheus"
-
 	"github.com/uber/cadence/common/dynamicconfig"
 	c "github.com/uber/cadence/common/dynamicconfig/configstore/config"
 	"github.com/uber/cadence/common/peerprovider/ringpopprovider"
@@ -74,21 +74,25 @@ type (
 		Authorization Authorization `yaml:"authorization"`
 	}
 
+	// Authorization TODO
 	Authorization struct {
 		OAuthAuthorizer OAuthAuthorizer `yaml:"oauthAuthorizer"`
 		NoopAuthorizer  NoopAuthorizer  `yaml:"noopAuthorizer"`
 	}
 
+	// DynamicConfig TODO
 	DynamicConfig struct {
 		Client      string                              `yaml:"client"`
 		ConfigStore c.ClientConfig                      `yaml:"configstore"`
 		FileBased   dynamicconfig.FileBasedClientConfig `yaml:"filebased"`
 	}
 
+	// NoopAuthorizer TODO
 	NoopAuthorizer struct {
 		Enable bool `yaml:"enable"`
 	}
 
+	// OAuthAuthorizer TODO
 	OAuthAuthorizer struct {
 		Enable bool `yaml:"enable"`
 		// Credentials to verify/create the JWT
@@ -97,6 +101,7 @@ type (
 		MaxJwtTTL int64 `yaml:"maxJwtTTL"`
 	}
 
+	// JwtCredentials TODO
 	JwtCredentials struct {
 		// support: RS256 (RSA using SHA256)
 		Algorithm string `yaml:"algorithm"`
@@ -424,6 +429,7 @@ type (
 		Filestore *FilestoreArchiver `yaml:"filestore"`
 		Gstorage  *GstorageArchiver  `yaml:"gstorage"`
 		S3store   *S3Archiver        `yaml:"s3store"`
+		COSstore  *COSArchiver       `yaml:"cosstore"`
 	}
 
 	// VisibilityArchival contains the config for visibility archival
@@ -459,6 +465,12 @@ type (
 		Region           string  `yaml:"region"`
 		Endpoint         *string `yaml:"endpoint"`
 		S3ForcePathStyle bool    `yaml:"s3ForcePathStyle"`
+	}
+
+	// COSArchiver contains the config for COS archiver
+	COSArchiver struct {
+		SecretID  string `yaml:"secretID"`
+		SecretKey string `yaml:"secretKey"`
 	}
 
 	// PublicClient is config for connecting to cadence frontend
@@ -561,6 +573,7 @@ func (c *Config) String() string {
 	return string(out)
 }
 
+// GetServiceConfig TODO
 func (c *Config) GetServiceConfig(serviceName string) (Service, error) {
 	shortName := service.ShortName(serviceName)
 	serviceConfig, ok := c.Services[shortName]
